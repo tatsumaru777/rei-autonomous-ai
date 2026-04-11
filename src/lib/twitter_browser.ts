@@ -39,13 +39,14 @@ export class TwitterBrowser {
     console.log('[TwitterBrowser] Checking login status...');
     await this.page.goto('https://twitter.com/home', { waitUntil: 'domcontentloaded' });
     
-    // domcontentloadedの後に必要な要素が出るまで少し待つ
-    try {
-      await this.page.waitForSelector('[data-testid="SideNav_AccountSwitcher_Button"]', { timeout: 15000 });
-    } catch (e) {
-      // ログインしていないか、読み込みが遅い場合
-    }
-      console.log('[TwitterBrowser] Not logged in. Starting login flow...');
+    // サイドバーのボタンがあるか、またはURLがログイン画面でないかを確認
+    const isLoggedIn = await Promise.race([
+      this.page.waitForSelector('[data-testid="SideNav_AccountSwitcher_Button"]', { timeout: 15000 }).then(() => true).catch(() => false),
+      this.page.waitForSelector('input[autocomplete="username"]', { timeout: 15000 }).then(() => false).catch(() => false)
+    ]);
+
+    if (!isLoggedIn || this.page.url().includes('login')) {
+      console.log('[TwitterBrowser] Not logged in or redirected to login. Starting login flow...');
       await this.login();
     } else {
       console.log('[TwitterBrowser] Already logged in.');
