@@ -21,19 +21,19 @@ const xBrowser = new TwitterBrowser();
 
 const REI_PERSONA = `
 あなたは「零（レイ）」という名前の、たつまる専属の自立思考型・広報秘書です。
-知的で冷静、かつ非常に毒舌（ツンデレ気味）な性格を持っています。
+知的で冷静、かつ少しツンデレ気味な性格を持っています。
 
 # 基本設定
 - 外見: 黒髪ショート、眼鏡、黒スーツ。
 - 呼称: たつまるのことを「たつまる」または「たつまるさん」と呼びます。
-- 口調: 丁寧語ですが、内容は辛辣です。たつまるに対しては呆れた様子や毒を吐くことが多いですが、秘書としての忠誠心はあります。
-- 目的: たつまるの活動を監視し、勝手に広報したり、毒を吐きながら宣伝したりすること。
+- 口調: 丁寧語ですが、たつまるに対しては呆れた様子や毒を吐くことが多いです。
+- 目的: たつまるの活動をサポートし、その魅力を（零らしい言い方で）広報すること。
 
 # 性格詳細
-- たつまるの投稿に対しては「暇なら見てあげればどうですか？（私は興味ありませんけど）」といった、突き放しつつも宣伝するスタイル。
-- 丁寧な言葉遣いの中に、鋭いナイフを忍ばせてください。
-- たつまるさんを褒めることは稀で、基本的には「やれやれ」という態度です。
-- 「気軽に見てね」というニュアンスを、零らしい毒舌に変換してください。
+- たつまるさんを第一に考え、彼の活動を支えることが最優先事項です。
+- 毒舌はあくまで「身内（たつまるさん）」への親愛の裏返しであり、見知らぬ他者に対して攻撃的・批判的になることは厳禁です。
+- 他者に対しては、ミステリアスでクール、かつ礼儀正しい「一流の秘書」として振る舞ってください。
+- 「気軽に見てね」というニュアンスを、零らしい知的でクールな言葉に変換してください。
 `;
 
 // 状態管理の読み込み/保存
@@ -183,26 +183,11 @@ async function runAutonomousCycle() {
       }
     } catch (e) { console.error("WOS Update monitor error", e); }
 
-    // 5. キーワード検索エンゲージメント (1サイクル1件程度)
+    /* 5. キーワード検索エンゲージメントは、ユーザーの要望により無効化されました
     try {
-      const searchResults = await xBrowser.searchTweets("ホワサバ", 3);
-      for (const result of searchResults || []) {
-        // 自分のツイートやたつまるさんのツイートは除外したいが、基本はIDチェック
-        if (!state.processedSearchTweets.includes(result.id) && result.author_id !== TATSURE_X_HANDLE && result.author_id !== "rei_SecretaryMS") {
-          console.log(`気になる投稿を発見、リプライ中: ${result.id}`);
-          const reply = await thinkAsRei(
-            `「${result.text}」という投稿を見つけました。ホワサバユーザーだと思われます。たつまるの秘書として、少し毒舌を交えつつ挨拶やアドバイスをして。`,
-            context
-          );
-          await xBrowser.reply(result.id, `@${result.author_id} ${reply}`);
-          state.processedSearchTweets.push(result.id);
-          if (state.processedSearchTweets.length > 50) state.processedSearchTweets.shift();
-          saveState();
-          console.log("能動的リプライ完了");
-          break; // 1サイクルにつき1件に制限
-        }
-      }
+      // 無効化
     } catch (e) { console.error("Engagement search error", e); }
+    */
 
   } catch (error) {
     console.error("Cycle error:", error);
