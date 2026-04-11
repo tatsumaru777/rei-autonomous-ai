@@ -20,21 +20,31 @@ export class TwitterBrowser {
     this.browser = await chromium.launch({ headless });
     
     // セッション情報の読み込み
+    const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
+    
     if (fs.existsSync(SESSION_FILE)) {
       console.log('[TwitterBrowser] Loading existing session...');
       const storageState = JSON.parse(fs.readFileSync(SESSION_FILE, 'utf-8'));
-      this.context = await this.browser.newContext({ storageState });
+      this.context = await this.browser.newContext({ storageState, userAgent });
     } else {
       console.log('[TwitterBrowser] No existing session found.');
-      this.context = await this.browser.newContext();
+      this.context = await this.browser.newContext({ userAgent });
     }
 
     this.page = await this.context.newPage();
+    this.page.setDefaultNavigationTimeout(60000); // 60s
+    this.page.setDefaultTimeout(60000);
     
     // ログイン状態の確認
-    await this.page.goto('https://twitter.com/home', { waitUntil: 'networkidle' });
+    console.log('[TwitterBrowser] Checking login status...');
+    await this.page.goto('https://twitter.com/home', { waitUntil: 'domcontentloaded' });
     
-    if (this.page.url().includes('login') || this.page.url().includes('i/flow/login')) {
+    // domcontentloadedの後に必要な要素が出るまで少し待つ
+    try {
+      await this.page.waitForSelector('[data-testid="SideNav_AccountSwitcher_Button"]', { timeout: 15000 });
+    } catch (e) {
+      // ログインしていないか、読み込みが遅い場合
+    }
       console.log('[TwitterBrowser] Not logged in. Starting login flow...');
       await this.login();
     } else {
@@ -48,7 +58,7 @@ export class TwitterBrowser {
       throw new Error('VITE_X_USER_ID or VITE_X_PASSWORD is not set in .env');
     }
 
-    await this.page.goto('https://twitter.com/i/flow/login');
+    await this.page.goto('https://twitter.com/i/flow/login', { waitUntil: 'domcontentloaded' });
     
     // ユーザー名入力
     await this.page.waitForSelector('input[autocomplete="username"]');
@@ -84,7 +94,7 @@ export class TwitterBrowser {
     console.log(`[TwitterBrowser] Posting tweet: ${text.substring(0, 50)}...`);
     
     try {
-      await this.page.goto('https://twitter.com/home');
+      await this.page.goto('https://twitter.com/home', { waitUntil: 'domcontentloaded' });
       await this.page.waitForSelector('[data-testid="tweetTextarea_0"]', { timeout: 15000 });
       await this.page.fill('[data-testid="tweetTextarea_0"]', text);
       await this.page.click('[data-testid="tweetButtonInline"]');
@@ -206,7 +216,7 @@ export class TwitterBrowser {
     console.log(`[TwitterBrowser] Following user: ${username}`);
     
     try {
-      await this.page.goto(`https://twitter.com/${username}`);
+      await this.page.goto(`https://twitter.com/${username}`, { waitUntil: 'domcontentloaded' });
       const followButton = await this.page.waitForSelector('[data-testid$="-follow"]', { timeout: 10000 });
       const text = await followButton.textContent();
       if (text && (text.includes('Following') || text.includes('フォロー中'))) {
