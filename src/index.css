@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+  --color-rei-bg: #0a0a0c;
+  --color-rei-panel: #16161a;
+  --color-rei-accent: #7c3aed;
+  --color-rei-text: #e2e8f0;
+  --color-rei-muted: #94a3b8;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-rei-bg text-rei-text font-sans antialiased;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-rei-bg;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-rei-panel rounded-full hover:bg-rei-accent transition-colors;
+}
+
+.glass-panel {
+  @apply bg-rei-panel/60 backdrop-blur-md border border-white/10 rounded-2xl;
+}
+
+.rei-gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-rei-accent to-blue-400;
+}
