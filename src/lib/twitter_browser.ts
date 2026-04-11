@@ -74,7 +74,7 @@ export class TwitterBrowser {
     } catch (e) {
       // メール/電話番号確認が出た場合の簡易対応
       console.log('[TwitterBrowser] Additional verification might be needed.');
-      await this.page.waitForSelector('input[name="password"]', { timeout: 30000 });
+      await this.page.waitForSelector('input[name="password"]', { timeout: 60000 });
       await this.page.fill('input[name="password"]', this.password);
       await this.page.click('span:has-text("Log in")');
     }
